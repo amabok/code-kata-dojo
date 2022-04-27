@@ -36,11 +36,7 @@ public class StringCalculator {
 		List<Float> parcels = new ArrayList<Float>();
 			
 		List<ParcelCandidate> candidates = extractParcelCandidates(input);
-		
-		for (ParcelCandidate parcelCandidate : candidates) {
-			System.out.println(parcelCandidate);
-		}
-		
+	
 		for (ParcelCandidate parcelCandidate : candidates) {
 			if(parcelCandidate.text.isEmpty()) {
 				
@@ -115,6 +111,7 @@ public class StringCalculator {
 		
 		return input.substring(calculateStartIndex(input,separatorStartIndex));
 	}
+	
 	private int calculateStartIndex(String input, int index) {
 		//If we are at the start of the string we don't want to eat any values
 		int result = index == 0 ? 0 : index + 1;

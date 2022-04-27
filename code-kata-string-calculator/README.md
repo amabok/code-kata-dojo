@@ -1,7 +1,7 @@
 String Calculator Code Kata
 ============
 
-** Sourced from: https://codingdojo.org/kata/StringCalculator/ **
+**Sourced from: https://codingdojo.org/kata/StringCalculator/**
 
 # Requirements
 - Java SE 11 installed
