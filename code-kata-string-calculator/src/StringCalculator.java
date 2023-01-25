@@ -32,12 +32,20 @@ public class StringCalculator {
 
 	public List<Float> extractParcels(String input) {
 		List<Float> parcels = new ArrayList<Float>();
-			
-		List<ParcelCandidate> candidates = parser.parse(input);
+		
+		DelimiterDetails delimiterDetails = parser.parseDelimiter(input);
+		
+		List<ParcelCandidate> candidates = parser.parse(delimiterDetails);
 		for (ParcelCandidate parcelCandidate : candidates){	
-			if(validator.validate(parcelCandidate)) {
-				float candidateValue = Float.valueOf(parcelCandidate.text);
-				parcels.add(candidateValue);
+			if(validator.validate(parcelCandidate,delimiterDetails)) {
+				
+				try {
+					float candidateValue = Float.valueOf(parcelCandidate.text);
+					parcels.add(candidateValue);
+				}
+				catch(Exception e) {
+					System.err.println(e);
+				}
 			}
 		}
 			

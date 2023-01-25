@@ -18,7 +18,7 @@ public class ParcelCandidateParserTests {
 	@Test
 	void test_parse_happy_path() {
 		// Given
-		String input = "1\n2,3";
+		DelimiterDetails input = new DelimiterDetails(null,"1\n2,3");
 		
 		List<ParcelCandidate> expectedResult = 
 				List.of(
@@ -37,8 +37,7 @@ public class ParcelCandidateParserTests {
 	@Test
 	void test_parse_newline_separator() {
 		// Given
-		String input = "1,1.1,2.2";
-		
+		DelimiterDetails input = new DelimiterDetails(null,"1,1.1,2.2");
 		
 		List<ParcelCandidate> expectedResult = 
 				List.of(
@@ -58,7 +57,7 @@ public class ParcelCandidateParserTests {
 	@Test
 	void test_parse_newline_separator_with_invalid_input_between_separators() {
 		// Given
-		String input = "175.2,\n35";
+		DelimiterDetails input = new DelimiterDetails(null,"175.2,\n35");
 		
 		List<ParcelCandidate> expectedResult =
 				List.of(
@@ -75,7 +74,7 @@ public class ParcelCandidateParserTests {
 	@Test
 	void test_parse_newline_separator_with_invalid_input_at_last_separator() {
 		// Given
-		String input = "1,3,";
+		DelimiterDetails input = new DelimiterDetails(null, "1,3,");
 		
 		List<ParcelCandidate> expectedResult =
 				List.of(
@@ -87,5 +86,54 @@ public class ParcelCandidateParserTests {
 	
 		// Then
 		assertEquals(expectedResult,result);
+	}
+	
+	@Test
+	void test_parse_delimiter_happy_path_1() {
+		// Given
+		String input = "//;\n1;2";
+		
+		String expectedDelimiter = ";";
+		String expectedDelimiterHeaderlessInput = "1;2";
+		
+		// When
+		DelimiterDetails result = subject.parseDelimiter(input);
+		
+		// Then
+		assertEquals(expectedDelimiter, result.delimiter);
+		assertEquals(expectedDelimiterHeaderlessInput, result.delimiterHeaderlessInput);
+	}
+	
+	@Test
+	void test_parse_delimiter_happy_path_2() {
+		// Given
+		String input = "//|\n1|2|3";
+		
+		String expectedDelimiter = "|";
+		String expectedDelimiterHeaderlessInput = "1|2|3";
+		
+		// When
+		DelimiterDetails result = subject.parseDelimiter(input);
+		
+		// Then
+		assertEquals(expectedDelimiter, result.delimiter);
+		assertEquals(expectedDelimiterHeaderlessInput, result.delimiterHeaderlessInput);
+	}
+	
+	
+	@Test
+	void test_parse_delimiter_happy_path_3() {
+		// Given
+		String input = "//sep\n1sep2";
+		
+		String expectedDelimiter = "sep";
+		String expectedDelimiterHeaderlessInput = "1sep2";
+		
+		// When
+		DelimiterDetails result = subject.parseDelimiter(input);
+		
+		// Then
+		assertEquals(expectedDelimiter, result.delimiter);
+		assertEquals(expectedDelimiterHeaderlessInput, result.delimiterHeaderlessInput);
 	}
 }

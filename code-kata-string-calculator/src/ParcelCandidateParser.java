@@ -7,10 +7,31 @@ import java.util.stream.Collectors;
 
 public class ParcelCandidateParser {
 	
-	public List<ParcelCandidate> parse(String input){
+	private static final String DEFAULT_DELIMITER = ",";
+	private static final String DEFAULT_DELIMITER_EXPRESSION = ",|\n";
+	
+	public List<ParcelCandidate> parse(DelimiterDetails delimiterDetailsInput){
+		// 'Clone' the object so we can change it later
+		DelimiterDetails delimiterDetails = new DelimiterDetails(
+				delimiterDetailsInput.delimiter, 
+				delimiterDetailsInput.delimiterHeaderlessInput);
+		
 		List<ParcelCandidate> result = new ArrayList<>();
 		
-		String patternExpression = ",|\n";
+		//TODO: consider extracting a method for patternExpression creation
+		String patternExpression = delimiterDetails.delimiter;
+		if(delimiterDetails.delimiter == null) {
+			delimiterDetails.delimiter = DEFAULT_DELIMITER;
+			patternExpression = DEFAULT_DELIMITER_EXPRESSION;
+		}
+		
+		if(patternExpression.equals("|")) {
+			patternExpression = "\\|";
+		}
+		
+		
+		String input = delimiterDetails.delimiterHeaderlessInput;
+		
 		Pattern pattern = Pattern.compile(patternExpression);
 		Matcher matcher = pattern.matcher(input);
 		
@@ -19,13 +40,17 @@ public class ParcelCandidateParser {
 					.collect(Collectors.toList());
 		
 		String previouslyMatchedSeparator = null;
-		//TODO: shouldnt this -1 or null if we don't use primitive types?
+		//TODO: shouldn't this -1 or null if we don't use primitive types?
 		int previouslyMatchedSeparatorIndex = 0;
 		for (MatchResult matchResult : res) {
 			
 			int matchedSeparatorStartIndex = matchResult.start();
 			
-			String splitResult = generateSplitString(input, previouslyMatchedSeparatorIndex, matchedSeparatorStartIndex);
+			String splitResult = generateSplitString(
+						input, 
+						delimiterDetails.delimiter, 
+						previouslyMatchedSeparatorIndex,
+						matchedSeparatorStartIndex);
 					
 			ParcelCandidate candidate = new ParcelCandidate(splitResult,previouslyMatchedSeparator,previouslyMatchedSeparatorIndex, matchResult.group(),  matchResult.start());
 			result.add(candidate);
@@ -34,7 +59,7 @@ public class ParcelCandidateParser {
 			previouslyMatchedSeparatorIndex = matchResult.start();
 		}
 		
-		String remainingString = generateRemainingString(input, previouslyMatchedSeparatorIndex);
+		String remainingString = generateRemainingString(input, delimiterDetails.delimiter, previouslyMatchedSeparatorIndex);
 		
 		ParcelCandidate candidate = new ParcelCandidate(remainingString, previouslyMatchedSeparator, previouslyMatchedSeparatorIndex, null, input.length()-1);
 		result.add(candidate);
@@ -42,17 +67,47 @@ public class ParcelCandidateParser {
 		return result;
 	}
 	
-	public String generateSplitString(String input, int startSeparatorIndex, int endSeparatorIndex) {
+	public DelimiterDetails parseDelimiter(String input) {
+		// Find for delimiter details
+		String delimiterStart = "//";
+		String delimiterEnd = "\n";
+		String patternExpression = String.format("%s.*%s*",delimiterStart,delimiterEnd);
+		
+		Pattern pattern = Pattern.compile(patternExpression);
+		Matcher matcher = pattern.matcher(input);
+	
+		List<MatchResult> res = 
+				matcher.results()
+					.collect(Collectors.toList());
+		
+		String delimiter = null;
+		for (MatchResult matchResult : res) {
+			String matchedText = matchResult.group();
+			delimiter = matchedText.replace(delimiterStart, "");
+			delimiter = delimiter.replace(delimiterEnd,"");
+		}
+		
+		if(delimiter==null) {
+			DelimiterDetails details = new DelimiterDetails(null, input);
+			return details;
+		}
+		
+		// Extract input without delimiter header
+		int delimiterHeaderEnd = input.indexOf("\n")+1;
+		return new DelimiterDetails(delimiter,input.substring(delimiterHeaderEnd)); 
+	}
+	
+	public String generateSplitString(String input, String separator, int startSeparatorIndex, int endSeparatorIndex) {
 		return input.substring(calculateStartIndex(input,startSeparatorIndex), endSeparatorIndex);
 	}
 	
-	public String generateRemainingString(String input, int separatorStartIndex) {
+	public String generateRemainingString(String input, String separator, int separatorStartIndex) {
 		// If the separator is at the last string index then return an empty string
 		if(separatorStartIndex == input.length()-1) {
 			return "";
 		}
 		
-		return input.substring(calculateStartIndex(input,separatorStartIndex));
+		return input.substring(calculateStartIndex(input, separatorStartIndex) + separator.length()-1);
 	}
 	
 	public int calculateStartIndex(String input, int index) {

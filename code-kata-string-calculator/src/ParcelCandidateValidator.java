@@ -1,7 +1,8 @@
-
 public class ParcelCandidateValidator {
 
-	public boolean validate(ParcelCandidate candidate) {
+	private DelimiterRuleParcelCandidateValidator delimiterRuleValidator = new DelimiterRuleParcelCandidateValidator();
+	
+	public boolean validate(ParcelCandidate candidate, DelimiterDetails delimiterDetails) {
 		if(candidate.text.isEmpty()) {
 			String message = String.format("Number expected but '%s' found at position %s.", candidate.endSeparator, candidate.endSeparatorIndex); 
 			if(candidate.endSeparator == null) {
@@ -10,6 +11,8 @@ public class ParcelCandidateValidator {
 			
 			throw new IllegalArgumentException(message);
 		}
+		
+		delimiterRuleValidator.validate(delimiterDetails, candidate);
 		
 		return true;
 	}
